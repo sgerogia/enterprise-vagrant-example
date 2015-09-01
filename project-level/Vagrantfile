@@ -1,0 +1,13 @@
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+    config.vm.provider "virtualbox" do |vb|
+        # Override memory yet again!
+        vb.memory = 4096
+    end
+
+    # Give a static IP
+    config.vm.network "private_network", ip: "10.1.1.10"
+
+    # HTTP
+    config.vm.network "forwarded_port", guest: 10105, host: 10105
+end
