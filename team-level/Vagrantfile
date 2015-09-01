@@ -1,0 +1,37 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+## ----- Constants section: Team members should not modify ----- ##
+# Location of the built box inside the enterprise
+BOX_URL = "http://myhost.mydomain.com/vagrant/baseboxes/centos6.box"
+# ...or it could be on a Windows file share
+# BOX_URL = File.expand_path("\\fileserver\vagrant\baseboxes\centos6.box")
+## ----- EOF Constants section ----- ##
+
+# Resolve local file path, relative to Vagrantfile
+@provisioning_file = File.expand_path("../scripts/provision.sh", __FILE__)
+@provisioning_folder = File.expand_path("../scripts/", __FILE__)
+
+# VAGRANTFILE_API_VERSION is defined in the enterprise-level Vagrantfile
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+    # Where do we download the enterprise box from?
+    config.vm.box_url = BOX_URL
+
+    # Needed if downloading from HTTPS site with expired cert, quite usual for internal sites
+    # Do not enable for external locations!
+    # config.vm.box_download_insecure = true
+
+    config.vm.provider "virtualbox" do |vb|
+
+        # Override allocated memory
+        vb.memory = 2048
+    end
+
+    # Run custom provisioning script in addition to the global one
+    config.vm.provision "shell", path: @provisioning_file
+
+    # ...or we can mount a folder with some local resources which we might need
+    config.vm.synced_folder @provisioning_folder, "/tmp/vagrant_scripts/"
+
+end

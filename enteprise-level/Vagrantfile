@@ -1,0 +1,58 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+require 'socket'
+require 'etc'
+
+VAGRANTFILE_API_VERSION = "2"
+
+# The name under which the box will be cached locally
+# When there is a new version released, everyone will use this to invalidate their local cache
+GLOBAL_BOX_NAME = "Enterprise-CentOS6"
+
+# Globally "unique" hostname, useful to avoid DNS problems
+# Assumes that the host name has some digits in its name and uses them
+# It then appends the final part of the location where the code runs from
+# This is a suggestion, which may (or not) work for you.
+# Take this into account as well though: http://stackoverflow.com/questions/8724954/what-is-the-maximum-number-of-characters-for-a-host-name-in-unix
+def get_new_hostname()
+  host_number = /\D*(\d*).*/i.match(Socket.gethostname)[1]
+  new_hostname = "vg" + host_number + '-' + File.basename(Dir.pwd).downcase.tr(" ", "-")
+  puts "Using Hostname: " + new_hostname
+  new_hostname
+end
+
+# VM name is based on current folder
+# In most projects, the check-out folder has the same name as the module
+# This makes it easy to distinguish the different project-initiated VMs in the UI and manage them
+def get_vm_name()
+    vm_name = File.basename(Dir.pwd).downcase.tr(" ", "_") + '-' + GLOBAL_BOX_NAME
+    puts "Using VM name: " + vm_name
+    vm_name
+end
+
+# Resolve local file path, relative to Vagrantfile
+@ent_provisioning_file = File.expand_path("../resources/provision.sh", __FILE__)
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+    config.vm.box = GLOBAL_BOX_NAME
+
+    config.vm.hostname = get_new_hostname()
+
+    config.vm.provider "virtualbox" do |vb|
+        vb.name = get_vm_name()
+        vb.memory = 1024
+        vb.cpus = 2 
+    end
+
+    # Guest additions
+    if defined? VagrantVbguest
+        config.vbguest.auto_update = true
+        config.vbguest.no_remote = true
+    end
+
+    # Enterprise provisioning step(s)
+    # You can use Chef, Puppet,...
+    config.vm.provision :shell, path: @ent_provisioning_file
+end
+
