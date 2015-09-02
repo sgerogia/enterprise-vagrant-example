@@ -14,4 +14,4 @@ You can read the detailed description of this project in this [blog post][4].
    [1]: ./enterprise-level
    [2]: ./team-level
    [3]: ./project-level
-   [4]: 
+   [4]: http://sgerogia.github.io/Using-Vagrant-for-Enterprise-Provisioning/
